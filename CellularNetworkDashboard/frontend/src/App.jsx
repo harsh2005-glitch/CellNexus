@@ -10,7 +10,8 @@ import TowerDetail from './components/TowerDetail';
 import CallStatsChart from './components/CallStatsChart';
 import SpeedTestModule from './components/SpeedTestModule';
 
-const socket = io('http://localhost:5000');
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const socket = io(API_URL);
 
 function App() {
   const [towers, setTowers] = useState([]);
@@ -26,7 +27,7 @@ function App() {
   });
 
   const fetchTowers = () => {
-    axios.get('http://localhost:5000/api/towers').then(res => {
+    axios.get(`${API_URL}/api/towers`).then(res => {
       setTowers(res.data);
       setGlobalMetrics(prev => ({ ...prev, onlineTowers: res.data.length }));
       

@@ -3,6 +3,8 @@ import axios from 'axios';
 import { Activity, Play, Download, Upload } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const SpeedTestModule = () => {
   const [testing, setTesting] = useState(false);
   const [results, setResults] = useState(null);
@@ -16,7 +18,7 @@ const SpeedTestModule = () => {
     try {
       // Phase 1: Real Ping (0-10%)
       const pingStart = performance.now();
-      await axios.get('http://localhost:5000/api/speed-tests/ping');
+      await axios.get(`${API_URL}/api/speed-tests/ping`);
       const latencyMs = Math.round(performance.now() - pingStart);
       setProgress(10);
       
@@ -24,7 +26,7 @@ const SpeedTestModule = () => {
       const dlSize = 20 * 1024 * 1024; // 20 MB
       const dlStart = performance.now();
       
-      const response = await fetch(`http://localhost:5000/api/speed-tests/download?size=${dlSize}`);
+      const response = await fetch(`${API_URL}/api/speed-tests/download?size=${dlSize}`);
       const reader = response.body.getReader();
       let receivedLength = 0;
       
@@ -49,7 +51,7 @@ const SpeedTestModule = () => {
       const ulStart = performance.now();
       
       const xhr = new XMLHttpRequest();
-      xhr.open('POST', 'http://localhost:5000/api/speed-tests/upload', true);
+      xhr.open('POST', `${API_URL}/api/speed-tests/upload`, true);
       xhr.setRequestHeader('Content-Type', 'application/octet-stream');
       
       const ulPromise = new Promise((resolve, reject) => {
@@ -74,7 +76,7 @@ const SpeedTestModule = () => {
       setProgress(100);
 
       // Save real results to database
-      await axios.post('http://localhost:5000/api/speed-tests', {
+      await axios.post(`${API_URL}/api/speed-tests`, {
         downloadSpeedMbps: parseFloat(downloadSpeedMbps),
         uploadSpeedMbps: parseFloat(uploadSpeedMbps),
         latencyMs

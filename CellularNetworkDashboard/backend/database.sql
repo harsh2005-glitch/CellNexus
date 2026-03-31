@@ -1,9 +1,6 @@
 -- Cellular Network Dashboard - MySQL Database
 -- This file contains all the raw SQL required to reconstruct the database, tables, and seed data.
 
-CREATE DATABASE IF NOT EXISTS `cellular_dashboard`;
-USE `cellular_dashboard`;
-
 -- 1. Towers Table
 CREATE TABLE IF NOT EXISTS `Towers` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,

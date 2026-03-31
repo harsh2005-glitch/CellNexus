@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import axios from 'axios';// Custom Tooltip to display Response Time alongside accepted/dropped calls
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+// Custom Tooltip to display Response Time alongside accepted/dropped calls
 const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
     const dataPoint = payload[0].payload;
@@ -24,7 +28,7 @@ const CallStatsChart = ({ towerId }) => {
 
     const fetchTelemetries = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/towers/${towerId}/telemetry`);
+        const res = await axios.get(`${API_URL}/api/towers/${towerId}/telemetry`);
         
         // Map MySQL telemetry data to chart format
         const formattedData = res.data.map((t, i) => {
