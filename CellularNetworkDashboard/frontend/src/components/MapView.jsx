@@ -27,7 +27,7 @@ const getStatusColor = (status) => {
 
 const MapView = ({ towers, selectedTower, onSelectTower }) => {
   const defaultCenter = [20.5937, 78.9629]; // Center of India for widespread towers
-  
+
   // Custom HTML Icon for Map Markers (giving it a premium look)
   const createCustomIcon = (status, isSelected) => {
     const color = getStatusColor(status);
@@ -49,9 +49,9 @@ const MapView = ({ towers, selectedTower, onSelectTower }) => {
 
   return (
     <div className="w-full h-full relative z-0">
-      <MapContainer 
-        center={defaultCenter} 
-        zoom={5} 
+      <MapContainer
+        center={defaultCenter}
+        zoom={5}
         style={{ height: '100%', width: '100%', borderRadius: '0.75rem' }}
       >
         {/* Dark theme map tiles */}
@@ -62,25 +62,31 @@ const MapView = ({ towers, selectedTower, onSelectTower }) => {
 
         {towers.map(tower => {
           const isSelected = selectedTower?.id === tower.id;
-          const statusIcon = createCustomIcon(tower.status, isSelected);  
+          const statusIcon = createCustomIcon(tower.status, isSelected);
 
           return (
             <React.Fragment key={tower.id}>
               {/* Coverage Radius Circle / Heatmap Effect */}
-              <Circle 
+              <Circle
                 center={[Number(tower.latitude), Number(tower.longitude)]}
-                pathOptions={{ 
+                pathOptions={{
                   color: tower.status === 'GOOD' ? '#10b981' : (tower.status === 'DEGRADED' ? '#f59e0b' : '#ef4444'),
                   fillColor: tower.status === 'GOOD' ? '#10b981' : (tower.status === 'DEGRADED' ? '#f59e0b' : '#ef4444'),
                   fillOpacity: isSelected ? 0.3 : 0.1,
                   weight: isSelected ? 2 : 1,
-                  className: 'transition-all duration-500'
+                  className: 'transition-all duration-1000 ease-in-out'
                 }}
-                radius={tower.coverageRadius}
+                radius={
+                  tower.status === 'GOOD' 
+                    ? tower.coverageRadius 
+                    : tower.status === 'DEGRADED' 
+                      ? tower.coverageRadius * 0.6 
+                      : tower.coverageRadius * 0.15
+                }
               />
 
               {/* Tower Marker */}
-              <Marker 
+              <Marker
                 position={[Number(tower.latitude), Number(tower.longitude)]}
                 icon={createCustomIcon(tower.status, isSelected)}
                 eventHandlers={{
@@ -101,9 +107,9 @@ const MapView = ({ towers, selectedTower, onSelectTower }) => {
 
         {/* Change view on select */}
         {selectedTower && (
-          <ChangeView 
-            center={[selectedTower.latitude, selectedTower.longitude]} 
-            zoom={14} 
+          <ChangeView
+            center={[selectedTower.latitude, selectedTower.longitude]}
+            zoom={14}
           />
         )}
       </MapContainer>

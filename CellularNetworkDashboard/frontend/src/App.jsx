@@ -43,10 +43,50 @@ function App() {
     // 1. Fetch initial towers
     fetchTowers();
 
-    // 2. Listen for real-time telemetry updates (Disabled user increment)
+    // 2. Listen for real-time telemetry updates to dynamically evaluate logic
     socket.on('telemetry_update', (updates) => {
-      // We are intentionally keeping Total Connected Users constant for the demo.
-      // If needed, we could still update other metrics here.
+      setTowers(prevTowers => {
+        const newTowers = [...prevTowers];
+        
+        let needsUpdate = false;
+        
+        updates.forEach(update => {
+          const towerIndex = newTowers.findIndex(t => t.id === update.towerId);
+          if (towerIndex !== -1) {
+            const tel = update.telemetry;
+            const totalIncoming = tel.callTotal || 0;
+            const totalAnswered = tel.callAccepted || 0;
+            
+            // Re-use our mathematical split
+            const answerRate = totalIncoming > 0 ? totalAnswered / totalIncoming : 1;
+            const incomingHandoff = totalIncoming * 0.3;
+            const answeredHandoff = Math.round(incomingHandoff * answerRate);
+            const droppedHandoff = Math.max(0, Math.round(incomingHandoff) - answeredHandoff);
+            const droppingProb = Math.min(1, Math.max(0, incomingHandoff > 0 ? droppedHandoff / incomingHandoff : 0));
+            
+            // Dynamic Threshold Logic (Updated to User requirements)
+            let newStatus = 'GOOD';
+            if (droppingProb > 0.10) newStatus = 'OFFLINE';
+            else if (droppingProb > 0.07) newStatus = 'DEGRADED';
+            
+            // Check if status actually flipped
+            if (newTowers[towerIndex].status !== newStatus) {
+              newTowers[towerIndex] = { ...newTowers[towerIndex], status: newStatus };
+              needsUpdate = true;
+              
+              // If the user happens to have this specific tower open, refresh their UI detail box immediately
+              setSelectedTower(currentSelected => {
+                if (currentSelected && currentSelected.id === update.towerId) {
+                  return { ...currentSelected, status: newStatus };
+                }
+                return currentSelected;
+              });
+            }
+          }
+        });
+        
+        return needsUpdate ? newTowers : prevTowers;
+      });
     });
 
     // 3. Fake initial global metrics for design
