@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CellNexus – Dashboard Functionalities</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #eef2f7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .page {
+      background: #ffffff;
+      border-radius: 22px;
+      padding: 44px 52px 38px;
+      max-width: 980px;
+      width: 100%;
+      box-shadow: 0 6px 40px rgba(0,0,0,0.10);
+    }
+
+    /* ── Title ── */
+    h1 {
+      text-align: center;
+      font-size: 21px;
+      font-weight: 800;
+      color: #111827;
+      letter-spacing: -0.4px;
+      margin-bottom: 5px;
+    }
+    .subtitle {
+      text-align: center;
+      font-size: 12.5px;
+      color: #6b7280;
+      margin-bottom: 36px;
+      font-weight: 500;
+      letter-spacing: 0.2px;
+    }
+
+    /* ── Outer flex wrapper ── */
+    .diagram {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+    }
+
+    /* ════════════ FUNCTIONALITIES BOX ════════════ */
+    .func-box {
+      flex: 1;
+      background: #2563eb;
+      border-radius: 18px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+    }
+
+    .tier {
+      border-radius: 12px;
+      padding: 15px 16px;
+    }
+
+    .tier-admin  { background: #4c1d95; }   /* Deep purple */
+    .tier-shared { background: #1e40af; }   /* Mid blue     */
+    .tier-user   { background: #0f766e; }   /* Deep teal    */
+
+    .tier-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      margin-bottom: 9px;
+    }
+    .tier-admin  .tier-label { color: #ddd6fe; }
+    .tier-shared .tier-label { color: #93c5fd; }
+    .tier-user   .tier-label { color: #99f6e4; }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+    .tag {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 6px 13px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #1f2937;
+      white-space: nowrap;
+    }
+
+    /* ════════════ SVG CONNECTOR ════════════ */
+    .svg-connector {
+      width: 100px;
+      flex-shrink: 0;
+      /* We'll draw lines using SVG inside */
+    }
+
+    /* ════════════ ROLES COLUMN ════════════ */
+    .roles-col {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      min-width: 105px;
+      padding: 14px 0;
+    }
+
+    .role-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .avatar {
+      width: 66px;
+      height: 66px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .avatar.admin  { background: #7c3aed; }
+    .avatar.user   { background: #0d9488; }
+    .avatar svg    { width: 38px; height: 38px; }
+
+    .role-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1f2937;
+    }
+
+    /* ════════════ LEGEND ════════════ */
+    .legend {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      margin-top: 28px;
+      flex-wrap: wrap;
+    }
+    .leg {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #4b5563;
+    }
+    .dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <h1>CellNexus &ndash; Dashboard Functionalities</h1>
+  <p class="subtitle">Role-based Access Mapping &nbsp;&bull;&nbsp; Admin &amp; User</p>
+
+  <div class="diagram">
+
+    <!-- ══ LEFT: FUNCTIONALITY TIERS ══ -->
+    <div class="func-box" id="func-box">
+
+      <div class="tier tier-admin" id="tier-admin">
+        <div class="tier-label">Admin Panel</div>
+        <div class="tags">
+          <span class="tag">Add Tower</span>
+          <span class="tag">Edit Tower</span>
+          <span class="tag">Delete Tower</span>
+          <span class="tag">Sort &amp; Filter Towers</span>
+          <span class="tag">View All Telemetry</span>
+        </div>
+      </div>
+
+      <div class="tier tier-shared" id="tier-shared">
+        <div class="tier-label">Shared Access</div>
+        <div class="tags">
+          <span class="tag">Live Map View</span>
+          <span class="tag">Tower Status Monitor</span>
+          <span class="tag">Call Stats Chart</span>
+          <span class="tag">Real-time Telemetry</span>
+        </div>
+      </div>
+
+      <div class="tier tier-user" id="tier-user">
+        <div class="tier-label">User Dashboard</div>
+        <div class="tags">
+          <span class="tag">Network Recommender</span>
+          <span class="tag">Speed Test</span>
+          <span class="tag">Filter by City / Operator</span>
+          <span class="tag">View Tower Details</span>
+          <span class="tag">My Network Info</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ MIDDLE: SVG ARROWS ══ -->
+    <svg class="svg-connector" id="svg-arrows" xmlns="http://www.w3.org/2000/svg">
+      <!-- Lines drawn by JS after layout -->
+    </svg>
+
+    <!-- ══ RIGHT: ROLE CARDS ══ -->
+    <div class="roles-col" id="roles-col">
+
+      <div class="role-card" id="role-admin">
+        <div class="avatar admin">
+          <!-- Shield icon (Admin) -->
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 3L4 7v5c0 4.8 3.4 9.3 8 10.4C17.6 21.3 20 16.8 20 12V7L12 3z"
+                  fill="rgba(255,255,255,0.2)" stroke="white" stroke-width="1.6" stroke-linejoin="round"/>
+            <circle cx="12" cy="10" r="3" fill="white" opacity="0.9"/>
+          </svg>
+        </div>
+        <span class="role-name">Admin</span>
+      </div>
+
+      <div class="role-card" id="role-user">
+        <div class="avatar user">
+          <!-- Person icon (User) -->
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="8" r="4" fill="white" opacity="0.9"/>
+            <path d="M4 20c0-3.9 3.6-7 8-7s8 3.1 8 7"
+                  stroke="white" stroke-width="2" stroke-linecap="round" fill="none"/>
+          </svg>
+        </div>
+        <span class="role-name">User</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ LEGEND ══ -->
+  <div class="legend">
+    <div class="leg">
+      <div class="dot" style="background:#7c3aed;"></div>
+      Admin Only
+    </div>
+    <div class="leg">
+      <div class="dot" style="background:#2563eb;"></div>
+      Shared (Both)
+    </div>
+    <div class="leg">
+      <div class="dot" style="background:#0d9488;"></div>
+      User Only
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Draw SVG arrows connecting roles to tiers after the layout has rendered.
+  function drawArrows() {
+    const svg = document.getElementById('svg-arrows');
+    const svgRect = svg.getBoundingClientRect();
+
+    function mid(el) {
+      const r = el.getBoundingClientRect();
+      return { x: r.left - svgRect.left, y: r.top - svgRect.top, w: r.width, h: r.height };
+    }
+
+    const adminTier   = mid(document.getElementById('tier-admin'));
+    const sharedTier  = mid(document.getElementById('tier-shared'));
+    const userTier    = mid(document.getElementById('tier-user'));
+    const roleAdmin   = mid(document.getElementById('role-admin'));
+    const roleUser    = mid(document.getElementById('role-user'));
+
+    // Set SVG height to match container
+    svg.setAttribute('height', svgRect.height);
+    svg.setAttribute('width',  svgRect.width);
+
+    const arrows = [
+      // Admin → Admin Tier
+      {
+        x1: roleAdmin.x,
+        y1: roleAdmin.y + roleAdmin.h / 2,
+        x2: adminTier.x + adminTier.w,
+        y2: adminTier.y + adminTier.h / 2,
+        color: '#7c3aed'
+      },
+      // Admin → Shared Tier (dashed)
+      {
+        x1: roleAdmin.x,
+        y1: roleAdmin.y + roleAdmin.h / 2,
+        x2: sharedTier.x + sharedTier.w,
+        y2: sharedTier.y + sharedTier.h / 2,
+        color: '#2563eb',
+        dash: true
+      },
+      // User → Shared Tier (dashed)
+      {
+        x1: roleUser.x,
+        y1: roleUser.y + roleUser.h / 2,
+        x2: sharedTier.x + sharedTier.w,
+        y2: sharedTier.y + sharedTier.h / 2,
+        color: '#2563eb',
+        dash: true
+      },
+      // User → User Tier
+      {
+        x1: roleUser.x,
+        y1: roleUser.y + roleUser.h / 2,
+        x2: userTier.x + userTier.w,
+        y2: userTier.y + userTier.h / 2,
+        color: '#0d9488'
+      }
+    ];
+
+    // Build SVG defs for arrowheads
+    let defs = `<defs>`;
+    ['purple:#7c3aed', 'blue:#2563eb', 'teal:#0d9488'].forEach(entry => {
+      const [id, color] = entry.split(':');
+      defs += `<marker id="ah-${id}" markerWidth="8" markerHeight="6"
+                        refX="8" refY="3" orient="auto">
+                 <polygon points="0 0, 8 3, 0 6" fill="${color}"/>
+               </marker>`;
+    });
+    defs += `</defs>`;
+
+    const colorMap = { '#7c3aed': 'purple', '#2563eb': 'blue', '#0d9488': 'teal' };
+
+    let lines = '';
+    arrows.forEach(a => {
+      const markerId = colorMap[a.color];
+      // Cubic bezier: control points pull horizontally
+      const cx1 = (a.x1 + a.x2) / 2;
+      const cx2 = (a.x1 + a.x2) / 2;
+      lines += `<path d="M${a.x1},${a.y1} C${cx1},${a.y1} ${cx2},${a.y2} ${a.x2},${a.y2}"
+                      fill="none"
+                      stroke="${a.color}"
+                      stroke-width="${a.dash ? 1.8 : 2.5}"
+                      stroke-dasharray="${a.dash ? '5,4' : 'none'}"
+                      marker-end="url(#ah-${markerId})"
+                      opacity="${a.dash ? 0.75 : 1}"/>`;
+    });
+
+    svg.innerHTML = defs + lines;
+  }
+
+  // Run after DOM paint
+  window.addEventListener('load', drawArrows);
+  window.addEventListener('resize', drawArrows);
+</script>
+</body>
+</html>

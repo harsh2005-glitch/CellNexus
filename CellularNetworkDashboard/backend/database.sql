@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS `Towers` (
 );
 
 -- 2. Telemetries Table
-CREATE TABLE IF NOT EXISTS `Telemetries` (
+CREATE TABLE IF NOT EXISTS `Telemetrics` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `towerId` INT NOT NULL,
   `latency` INT NOT NULL DEFAULT 0,

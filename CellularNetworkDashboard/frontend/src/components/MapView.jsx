@@ -77,10 +77,10 @@ const MapView = ({ towers, selectedTower, onSelectTower }) => {
                   className: 'transition-all duration-1000 ease-in-out'
                 }}
                 radius={
-                  tower.status === 'GOOD' 
-                    ? tower.coverageRadius 
-                    : tower.status === 'DEGRADED' 
-                      ? tower.coverageRadius * 0.6 
+                  tower.status === 'GOOD'
+                    ? tower.coverageRadius
+                    : tower.status === 'DEGRADED'
+                      ? tower.coverageRadius * 0.6
                       : tower.coverageRadius * 0.15
                 }
               />

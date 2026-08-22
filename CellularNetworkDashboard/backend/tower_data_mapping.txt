@@ -3,39 +3,49 @@ Network Architecture: Geographical Data Slicing Map
 
 | Tower ID | Location         | Operator      | CSV Assigned Range |
 |----------|------------------|---------------|--------------------|
-| 1        | Rajkot           | Jio           | [0 to 24]          |
-| 2        | Rajkot           | Jio           | [25 to 49]         |
-| 3        | Mumbai           | Jio           | [50 to 74]         |
-| 4        | Delhi            | Jio           | [75 to 99]         |
-| 5        | Chennai          | Jio           | [100 to 124]       |
-| 6        | Kolkata          | Airtel        | [125 to 149]       |
-| 7        | Pune             | Airtel        | [150 to 174]       |
-| 8        | Madurai          | Airtel        | [175 to 199]       |
-| 9        | Ahmedabad        | Airtel        | [200 to 224]       |
-| 10       | Kolkata          | Airtel        | [225 to 249]       |
-| 11       | Kolkata          | Vi            | [250 to 274]       |
-| 12       | Pune             | Vi            | [275 to 299]       |
-| 13       | Mumbai           | Vi            | [300 to 324]       |
-| 14       | Ahmedabad        | Vi            | [325 to 349]       |
-| 15       | Bangalore        | Vi            | [350 to 374]       |
-| 16       | Kolkata          | Vi            | [375 to 399]       |
-| 17       | Pune             | Vi            | [400 to 424]       |
-| 18       | Kolkata          | BSNL          | [425 to 449]       |
-| 19       | Bangalore        | BSNL          | [450 to 474]       |
-| 20       | Mumbai           | Jio           | [475 to 499]       |
-| 21       | Mumbai           | Jio           | [500 to 524]       |
-| 22       | Mumbai           | Jio           | [525 to 549]       |
-| 23       | Mumbai           | Jio           | [550 to 574]       |
-| 24       | Mumbai           | Jio           | [575 to 599]       |
-| 25       | Mumbai           | Jio           | [600 to 624]       |
-| 26       | Mumbai           | Jio           | [625 to 649]       |
-| 27       | Mumbai           | Jio           | [650 to 674]       |
-| 28       | Mumbai           | Jio           | [675 to 699]       |
-| 29       | Mumbai           | Jio           | [700 to 724]       |
-| 30       | Kolkata          | Airtel        | [725 to 749]       |
-| 31       | Kolkata          | Airtel        | [750 to 774]       |
-| 32       | Kolkata          | Airtel        | [775 to 799]       |
-| 33       | Kolkata          | Airtel        | [800 to 824]       |
-| 34       | Kolkata          | Airtel        | [825 to 849]       |
-| 35       | Kolkata          | Airtel        | [850 to 874]       |
-| 36       | Kolkata          | Airtel        | [875 to 899]       |
+| 1        | Mumbai (Dharavi) | Jio           | [0 to 18]          |
+| 2        | Mumbai (Dadra)   | Jio           | [19 to 37]         |
+| 3        | Navi Mumbai      | Jio           | [38 to 56]         |
+| 4        | Mumbai (Wadala)  | Airtel        | [57 to 75]         |
+| 5        | Mumbai (Vasai)   | Vi            | [76 to 94]         |
+| 6        | Delhi (Connaught Place) | Jio           | [95 to 113]        |
+| 7        | Noida (Sector 62) | Airtel        | [114 to 132]       |
+| 8        | Gurugram (DLF CyberHub) | Vi            | [133 to 151]       |
+| 9        | Delhi (Chandni Chowk) | BSNL          | [152 to 170]       |
+| 10       | Bangalore (MG Road) | Jio           | [171 to 189]       |
+| 11       | Bangalore (Koramangala) | Airtel        | [190 to 208]       |
+| 12       | Bangalore (Indiranagar) | Vi            | [209 to 227]       |
+| 13       | Bangalore (Malleshwaram) | BSNL          | [228 to 246]       |
+| 14       | Kolkata (Esplanade) | Jio           | [247 to 265]       |
+| 15       | Kolkata (Salt Lake Sector V) | Jio           | [266 to 284]       |
+| 16       | Kolkata (Park Street) | Airtel        | [285 to 303]       |
+| 17       | Kolkata (New Town Action Area 1) | Airtel        | [304 to 322]       |
+| 18       | Kolkata (Sealdah) | Vi            | [323 to 341]       |
+| 19       | Kolkata (Shyambazar) | BSNL          | [342 to 360]       |
+| 20       | Kolkata (Dum Dum / Airport) | Jio           | [361 to 379]       |
+| 21       | Kolkata (Jadavpur) | Airtel        | [380 to 398]       |
+| 22       | Kolkata (Garia Bus Depot) | Vi            | [399 to 417]       |
+| 23       | Kolkata (Alipore) | Jio           | [418 to 436]       |
+| 24       | Kolkata (Ballygunge) | Airtel        | [437 to 455]       |
+| 25       | Kolkata (Behala Chowrasta) | BSNL          | [456 to 474]       |
+| 26       | Howrah (Railway Station) | Jio           | [475 to 493]       |
+| 27       | Howrah (Shibpur Mandirtala) | Airtel        | [494 to 512]       |
+| 28       | Howrah (Nabanna State Secretariat) | Vi            | [513 to 531]       |
+| 29       | Howrah (Salkia AC Market) | BSNL          | [532 to 550]       |
+| 30       | Howrah (Bally Bazar) | Airtel        | [551 to 569]       |
+| 31       | Howrah (Santragachi Junction) | Jio           | [570 to 588]       |
+| 32       | Howrah (Liluah)  | Vi            | [589 to 607]       |
+| 33       | Howrah (Belur Math) | BSNL          | [608 to 626]       |
+| 34       | Howrah (Kona Expressway) | Jio           | [627 to 645]       |
+| 35       | Chennai (Central) | Jio           | [646 to 664]       |
+| 36       | Chennai (Tambaram) | Airtel        | [665 to 683]       |
+| 37       | Chennai (Nungambakkam) | Vi            | [684 to 702]       |
+| 38       | Hyderabad (HITECH City) | Jio           | [703 to 721]       |
+| 39       | Hyderabad (Charminar) | Airtel        | [722 to 740]       |
+| 40       | Hyderabad (Banjara Hills) | Vi            | [741 to 759]       |
+| 41       | Rajkot           | Jio           | [760 to 778]       |
+| 42       | Ahmedabad (Navrangpura) | Airtel        | [779 to 797]       |
+| 43       | Ahmedabad (SG Highway) | Vi            | [798 to 816]       |
+| 44       | Pune (Kothrud)   | Airtel        | [817 to 835]       |
+| 45       | Pune (Hinjewadi IT Park) | Vi            | [836 to 854]       |
+| 46       | Pune (Shivajinagar) | Jio           | [855 to 899]       |

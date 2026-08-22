@@ -36,10 +36,11 @@ app.use(express.raw({ type: 'application/octet-stream', limit: '50mb' }));
 // Import Routes
 const towerRoutes = require('./routes/towers');
 const speedTestRoutes = require('./routes/speedTests');
-// Removed: const { Tower, Telemetry } = require('./models');
+const { router: authRoutes } = require('./routes/auth');
 
 app.use('/api/towers', towerRoutes);
 app.use('/api/speed-tests', speedTestRoutes);
+app.use('/api/auth', authRoutes);
 
 // Basic health check
 app.get('/api/health', (req, res) => {

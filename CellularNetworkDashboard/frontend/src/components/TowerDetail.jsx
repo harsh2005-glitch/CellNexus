@@ -6,7 +6,7 @@ const TowerDetail = ({ tower, onBack }) => {
   if (!tower) return null;
 
   const getStatusIcon = (status) => {
-    switch(status) {
+    switch (status) {
       case 'GOOD': return <CheckCircle2 className="text-emerald-500" size={20} />;
       case 'DEGRADED': return <Activity className="text-amber-500" size={20} />;
       case 'OFFLINE': return <ShieldAlert className="text-red-500" size={20} />;
@@ -15,7 +15,7 @@ const TowerDetail = ({ tower, onBack }) => {
   };
 
   const getStatusColor = (status) => {
-    switch(status) {
+    switch (status) {
       case 'GOOD': return 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20';
       case 'DEGRADED': return 'text-amber-400 bg-amber-500/10 border border-amber-500/20';
       case 'OFFLINE': return 'text-red-400 bg-red-500/10 border border-red-500/20';
@@ -24,7 +24,7 @@ const TowerDetail = ({ tower, onBack }) => {
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
@@ -32,7 +32,7 @@ const TowerDetail = ({ tower, onBack }) => {
     >
       {/* Header with Back Button */}
       <div className="flex items-center gap-3 mb-4">
-        <button 
+        <button
           onClick={onBack}
           className="p-2 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors border border-transparent hover:border-slate-700"
         >
@@ -69,8 +69,8 @@ const TowerDetail = ({ tower, onBack }) => {
             <span className="text-slate-200 font-mono bg-slate-800 px-2 py-1 rounded text-xs">T-{tower.cid}</span>
           </div>
           <div className="border-b border-slate-700/50 p-4 flex justify-between items-center">
-            <span className="text-slate-400 flex items-center gap-2 font-medium"><MapPin size={16}/> Coordinates</span>
-            <span className="text-slate-200 text-right">{Number(tower.latitude).toFixed(4)},<br/>{Number(tower.longitude).toFixed(4)}</span>
+            <span className="text-slate-400 flex items-center gap-2 font-medium"><MapPin size={16} /> Coordinates</span>
+            <span className="text-slate-200 text-right">{Number(tower.latitude).toFixed(4)},<br />{Number(tower.longitude).toFixed(4)}</span>
           </div>
 
           {tower.radio && (
@@ -86,7 +86,7 @@ const TowerDetail = ({ tower, onBack }) => {
             </div>
           )}
           <div className="p-4 flex justify-between items-center">
-            <span className="text-slate-400 flex items-center gap-2 font-medium"><Zap size={16}/> Coverage Radius</span>
+            <span className="text-slate-400 flex items-center gap-2 font-medium"><Zap size={16} /> Coverage Radius</span>
             <span className="text-slate-200">{tower.coverageRadius} meters</span>
           </div>
         </div>

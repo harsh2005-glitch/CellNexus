@@ -21,39 +21,39 @@ const SpeedTestModule = () => {
       await axios.get(`${API_URL}/api/speed-tests/ping`);
       const latencyMs = Math.round(performance.now() - pingStart);
       setProgress(10);
-      
+
       // Phase 2: Real Download (20MB chunk) (10-60%)
       const dlSize = 20 * 1024 * 1024; // 20 MB
       const dlStart = performance.now();
-      
+
       const response = await fetch(`${API_URL}/api/speed-tests/download?size=${dlSize}`);
       const reader = response.body.getReader();
       let receivedLength = 0;
-      
-      while(true) {
-        const {done, value} = await reader.read();
+
+      while (true) {
+        const { done, value } = await reader.read();
         if (done) break;
         receivedLength += value.length;
         // Map 0 -> 20MB to 10% -> 60% progress
         setProgress(10 + (receivedLength / dlSize) * 50);
       }
-      
+
       const dlEnd = performance.now();
       const dlDurationInSeconds = (dlEnd - dlStart) / 1000;
       const dlBits = dlSize * 8;
       const downloadSpeedMbps = (dlBits / dlDurationInSeconds / 1000000).toFixed(2);
-      
+
       setProgress(60);
-      
+
       // Phase 3: Real Upload (5MB chunk) (60-100%)
       const ulSize = 5 * 1024 * 1024; // 5 MB
       const dummyData = new Uint8Array(ulSize); // Fills with 0s
       const ulStart = performance.now();
-      
+
       const xhr = new XMLHttpRequest();
       xhr.open('POST', `${API_URL}/api/speed-tests/upload`, true);
       xhr.setRequestHeader('Content-Type', 'application/octet-stream');
-      
+
       const ulPromise = new Promise((resolve, reject) => {
         xhr.upload.onprogress = (event) => {
           if (event.lengthComputable) {
@@ -65,14 +65,14 @@ const SpeedTestModule = () => {
         xhr.onerror = () => reject();
         xhr.send(dummyData);
       });
-      
+
       await ulPromise;
-      
+
       const ulEnd = performance.now();
       const ulDurationInSeconds = (ulEnd - ulStart) / 1000;
       const ulBits = ulSize * 8;
       const uploadSpeedMbps = (ulBits / ulDurationInSeconds / 1000000).toFixed(2);
-      
+
       setProgress(100);
 
       // Save real results to database
@@ -98,8 +98,8 @@ const SpeedTestModule = () => {
     <div className="glass-panel p-5 flex flex-col h-full relative overflow-hidden">
       {/* Background glow when testing */}
       {testing && (
-        <motion.div 
-          animate={{ opacity: [0.1, 0.3, 0.1] }} 
+        <motion.div
+          animate={{ opacity: [0.1, 0.3, 0.1] }}
           transition={{ repeat: Infinity, duration: 2 }}
           className="absolute inset-0 bg-blue-500/20 pointer-events-none"
         />
@@ -111,7 +111,7 @@ const SpeedTestModule = () => {
           Real-Time Speed Test
         </h2>
         {!testing && (
-          <button 
+          <button
             onClick={runTest}
             className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-1.5 rounded-lg font-medium text-sm transition-colors flex items-center gap-2"
           >
@@ -124,7 +124,7 @@ const SpeedTestModule = () => {
       <div className="flex-1 flex flex-col justify-center space-y-6 z-10">
         {/* Progress Bar */}
         <div className="w-full bg-slate-900 rounded-full h-2.5 border border-slate-700 overflow-hidden">
-          <motion.div 
+          <motion.div
             className="bg-blue-500 h-2.5 rounded-full"
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}

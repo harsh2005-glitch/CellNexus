@@ -85,7 +85,7 @@ const MyNetworkModal = ({ isOpen, onClose }) => {
                 ) : (
                   <React.Fragment>
                     <div className="space-y-3">
-                      
+
                       <div className="flex justify-between items-center border-b border-slate-800 pb-2">
                         <span className="text-slate-400">Operator</span>
                         <span className="font-medium text-slate-100 text-right">{networkData?.org || 'Unknown'}</span>
