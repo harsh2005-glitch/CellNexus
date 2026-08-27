@@ -398,17 +398,12 @@ const RoleSelector = ({ onSelectRole }) => {
             dragging={true}
             doubleClickZoom={true}
           >
-            {/* Satellite imagery base — vivid telecom feel */}
+            {/* CartoDB Dark Matter — 100% free, no API key needed */}
             <TileLayer
-              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-              attribution="Tiles &copy; Esri"
+              url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+              subdomains="abcd"
               maxZoom={19}
-            />
-            {/* Country/city labels overlay */}
-            <TileLayer
-              url="https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png"
-              attribution=""
-              opacity={0.85}
             />
             {SAMPLE_TOWERS.map(tower => {
               const col = getStatusColorLanding(tower.status);
