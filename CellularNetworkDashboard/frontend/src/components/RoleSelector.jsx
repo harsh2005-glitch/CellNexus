@@ -28,8 +28,27 @@ const getStatusColorLanding = (status) => {
 
 const createLandingIcon = (status) => {
   const color = getStatusColorLanding(status);
-  const html = `<div style="position:relative;width:20px;height:20px;display:flex;align-items:center;justify-content:center;"><span style="position:absolute;inset:0;border-radius:50%;background:${color};opacity:0.3;animation:landingPing 2s cubic-bezier(0,0,0.2,1) infinite;"></span><span style="position:relative;width:12px;height:12px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.4);display:block;"></span></div>`;
-  return L.divIcon({ className: 'bg-transparent', html, iconSize: [20, 20], iconAnchor: [10, 10] });
+  // Cell-tower SVG with animated multi-ring signal halo
+  const html = `
+    <div style="position:relative;width:48px;height:48px;display:flex;align-items:center;justify-content:center;">
+      <!-- Outer ring 3 -->
+      <span style="position:absolute;width:48px;height:48px;border-radius:50%;border:1.5px solid ${color};opacity:0.2;animation:landingRing3 3s ease-out infinite;"></span>
+      <!-- Outer ring 2 -->
+      <span style="position:absolute;width:32px;height:32px;border-radius:50%;border:1.5px solid ${color};opacity:0.35;animation:landingRing2 3s ease-out 0.6s infinite;"></span>
+      <!-- Inner glow ring -->
+      <span style="position:absolute;width:20px;height:20px;border-radius:50%;background:${color};opacity:0.18;animation:landingPing 2s cubic-bezier(0,0,0.2,1) infinite;"></span>
+      <!-- Tower SVG icon -->
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:relative;filter:drop-shadow(0 0 4px ${color});">
+        <path d="M12 2 L10 22 L14 22 Z" fill="${color}" opacity="0.9"/>
+        <line x1="8" y1="8" x2="16" y2="8" stroke="${color}" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="9" y1="13" x2="15" y2="13" stroke="${color}" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M5 5 Q12 1 19 5" stroke="${color}" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.7"/>
+        <path d="M3 3 Q12 -1 21 3" stroke="${color}" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.4"/>
+        <circle cx="12" cy="22" r="1.5" fill="${color}"/>
+      </svg>
+    </div>
+  `;
+  return L.divIcon({ className: 'bg-transparent', html, iconSize: [48, 48], iconAnchor: [24, 24] });
 };
 
 /* ── Role card data ── */
@@ -141,6 +160,7 @@ const RoleCard = ({ role, isHovered, onHover, onLeave, onClick }) => {
           ? `0 16px 48px ${role.shadowColor}, 0 4px 16px rgba(0,0,0,0.12)`
           : `0 4px 24px ${role.shadowColor}`,
         width: '100%',
+        flex: 1,
       }}
     >
       {/* Shine overlay */}
@@ -320,7 +340,7 @@ const RoleSelector = ({ onSelectRole }) => {
         animate="visible"
       >
         {/* LEFT — 3 cards stacked vertically */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', height: '100%' }}>
           {ROLES.map((role) => (
             <RoleCard
               key={role.id}
@@ -343,6 +363,9 @@ const RoleSelector = ({ onSelectRole }) => {
             border: '1.5px solid #E2E8F0',
             position: 'relative',
             minHeight: '480px',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
           }}
         >
           {/* Live label */}
@@ -368,34 +391,59 @@ const RoleSelector = ({ onSelectRole }) => {
           <MapContainer
             center={[20.5937, 78.9629]}
             zoom={4}
-            style={{ height: '100%', width: '100%', minHeight: '480px' }}
+            style={{ height: '100%', width: '100%', minHeight: '480px', flex: 1 }}
             zoomControl={true}
             attributionControl={false}
             scrollWheelZoom={true}
             dragging={true}
             doubleClickZoom={true}
           >
+            {/* Satellite imagery base — vivid telecom feel */}
             <TileLayer
-              url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+              attribution="Tiles &copy; Esri"
+              maxZoom={19}
             />
-            {SAMPLE_TOWERS.map(tower => (
-              <React.Fragment key={tower.id}>
-                <Circle
-                  center={[tower.latitude, tower.longitude]}
-                  radius={tower.coverageRadius}
-                  pathOptions={{
-                    color: getStatusColorLanding(tower.status),
-                    fillColor: getStatusColorLanding(tower.status),
-                    fillOpacity: 0.13,
-                    weight: 1.2,
-                  }}
-                />
-                <Marker
-                  position={[tower.latitude, tower.longitude]}
-                  icon={createLandingIcon(tower.status)}
-                />
-              </React.Fragment>
-            ))}
+            {/* Country/city labels overlay */}
+            <TileLayer
+              url="https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png"
+              attribution=""
+              opacity={0.85}
+            />
+            {SAMPLE_TOWERS.map(tower => {
+              const col = getStatusColorLanding(tower.status);
+              return (
+                <React.Fragment key={tower.id}>
+                  {/* Outer faint coverage zone */}
+                  <Circle
+                    center={[tower.latitude, tower.longitude]}
+                    radius={tower.coverageRadius}
+                    pathOptions={{
+                      color: col,
+                      fillColor: col,
+                      fillOpacity: 0.07,
+                      weight: 1.5,
+                      dashArray: '6 4',
+                    }}
+                  />
+                  {/* Inner stronger core zone */}
+                  <Circle
+                    center={[tower.latitude, tower.longitude]}
+                    radius={tower.coverageRadius * 0.45}
+                    pathOptions={{
+                      color: col,
+                      fillColor: col,
+                      fillOpacity: 0.18,
+                      weight: 2,
+                    }}
+                  />
+                  <Marker
+                    position={[tower.latitude, tower.longitude]}
+                    icon={createLandingIcon(tower.status)}
+                  />
+                </React.Fragment>
+              );
+            })}
           </MapContainer>
 
           {/* Legend */}
@@ -434,7 +482,16 @@ const RoleSelector = ({ onSelectRole }) => {
           50% { opacity: 0.5; transform: scale(0.82); }
         }
         @keyframes landingPing {
-          75%, 100% { transform: scale(2); opacity: 0; }
+          0% { transform: scale(0.8); opacity: 0.6; }
+          100% { transform: scale(2.2); opacity: 0; }
+        }
+        @keyframes landingRing2 {
+          0% { transform: scale(0.6); opacity: 0.5; }
+          100% { transform: scale(1.8); opacity: 0; }
+        }
+        @keyframes landingRing3 {
+          0% { transform: scale(0.4); opacity: 0.3; }
+          100% { transform: scale(2.4); opacity: 0; }
         }
       `}</style>
     </div>

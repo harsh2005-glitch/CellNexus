@@ -1,40 +1,169 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @import "tailwindcss";
 
+/* ═══════════════════════════════════════════════════
+   CELLNEXUS — PEARL INDIGO LIGHT THEME
+   Palette: Lavender-White · Electric Cyan · Neon Violet · Deep Indigo
+═══════════════════════════════════════════════════ */
+
+:root {
+  --bg-base:        #F5F3FF;          /* soft lavender-white */
+  --bg-surface:     #FAFAFF;          /* card background (near white) */
+  --bg-elevated:    #FFFFFF;          /* elevated surfaces */
+  --accent-cyan:    #06B6D4;          /* vivid cyan */
+  --accent-violet:  #7C3AED;          /* rich violet */
+  --accent-indigo:  #4F46E5;          /* indigo */
+  --accent-emerald: #059669;          /* status green */
+  --accent-amber:   #D97706;          /* status amber */
+  --accent-red:     #DC2626;          /* status red */
+  --border-glow:    rgba(99,102,241,0.22);
+  --border-subtle:  rgba(99,102,241,0.10);
+  --text-primary:   #1E1B4B;          /* deep indigo for main text */
+  --text-muted:     #6B7DB3;          /* muted indigo-blue */
+}
+
 @layer base {
   body {
-    @apply bg-slate-900 text-slate-200 font-sans antialiased;
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    /* Layered radial gradient blobs for the signature glow feel */
+    background-image:
+      radial-gradient(ellipse 70% 45% at 10% 5%,  rgba(139,92,246,0.14) 0%, transparent 65%),
+      radial-gradient(ellipse 55% 35% at 90% 95%,  rgba(6,182,212,0.12)  0%, transparent 60%),
+      radial-gradient(ellipse 45% 30% at 55% 45%,  rgba(79,70,229,0.07)  0%, transparent 55%),
+      radial-gradient(ellipse 40% 25% at 80% 10%,  rgba(168,85,247,0.08) 0%, transparent 50%);
+    background-attachment: fixed;
+    min-height: 100vh;
   }
+
+  * { box-sizing: border-box; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: #EEE9FF; }
+  ::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.35); border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.60); }
 }
 
 @layer utilities {
+  /* ── Glass panel — light frosted card ── */
   .glass-panel {
-    @apply bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-xl shadow-lg;
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(99, 102, 241, 0.18);
+    border-radius: 1rem;
+    box-shadow:
+      0 4px 24px rgba(79, 70, 229, 0.08),
+      0 1px 4px  rgba(99,102,241,0.06),
+      0 0 0 1px rgba(255,255,255,0.85) inset;
   }
 
   .glass-panel-hover {
-    @apply bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-xl shadow-lg hover:bg-slate-800/90 hover:border-slate-600/50 transition-all duration-300;
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(99, 102, 241, 0.18);
+    border-radius: 1rem;
+    box-shadow:
+      0 4px 24px rgba(79, 70, 229, 0.08),
+      0 1px 4px  rgba(99,102,241,0.06),
+      0 0 0 1px rgba(255,255,255,0.85) inset;
+    transition: all 0.3s ease;
   }
 
+  .glass-panel-hover:hover {
+    background: rgba(255, 255, 255, 0.88);
+    border-color: rgba(99, 102, 241, 0.38);
+    box-shadow:
+      0 8px 40px rgba(79, 70, 229, 0.14),
+      0 2px 8px  rgba(99,102,241,0.10),
+      0 0 0 1px rgba(255,255,255,0.90) inset;
+    transform: translateY(-1px);
+  }
+
+  /* ── Glow text ── */
   .text-glow {
-    text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    text-shadow: 0 0 16px rgba(79,70,229,0.35), 0 0 32px rgba(6,182,212,0.20);
+  }
+
+  /* ── Neon badge ── */
+  .neon-badge {
+    background: rgba(79,70,229,0.10);
+    border: 1px solid rgba(79,70,229,0.28);
+    color: #4F46E5;
+    border-radius: 999px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 10px;
   }
 }
 
-/* Leaflet Dark Theme Overrides */
+/* ── Select dropdowns ── */
+select {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border: 1px solid rgba(99,102,241,0.28) !important;
+  color: #1E1B4B !important;
+  border-radius: 0.5rem !important;
+  outline: none !important;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+select:focus {
+  border-color: #4F46E5 !important;
+  box-shadow: 0 0 0 3px rgba(79,70,229,0.12) !important;
+}
+option {
+  background: #FFFFFF;
+  color: #1E1B4B;
+}
+
+/* ── Leaflet overrides for light theme ── */
 .leaflet-container {
-  background: #1E293B !important;
+  background: #E9E6F8 !important;
   font-family: 'Inter', sans-serif;
 }
 
 .leaflet-popup-content-wrapper {
-  background: #1E293B !important;
-  color: #f1f5f9 !important;
-  border: 1px solid #334155 !important;
-  border-radius: 0.5rem !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  color: #1E1B4B !important;
+  border: 1px solid rgba(99,102,241,0.30) !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 8px 32px rgba(79,70,229,0.15), 0 0 0 1px rgba(255,255,255,0.9) inset !important;
+  backdrop-filter: blur(16px);
 }
 
 .leaflet-popup-tip {
-  background: #1E293B !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+}
+
+.leaflet-control-zoom a {
+  background: rgba(255, 255, 255, 0.90) !important;
+  color: #4F46E5 !important;
+  border-color: rgba(99,102,241,0.25) !important;
+  font-weight: 700;
+}
+.leaflet-control-zoom a:hover {
+  background: rgba(79,70,229,0.10) !important;
+}
+
+/* ── Subtle dot-grid background texture ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(99,102,241,0.12) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Ensure everything sits above the dot grid */
+#root {
+  position: relative;
+  z-index: 1;
 }
