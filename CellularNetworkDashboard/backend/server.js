@@ -22,14 +22,51 @@ const { initializeDatabase, pool } = require('./config/db');
 
 const app = express();
 const server = http.createServer(app);
+
+// ── CORS: allow localhost dev + deployed Vercel frontend ────────────────────
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://localhost:4173',
+  process.env.CLIENT_URL,          // Set this on Render: your Vercel URL
+].filter(Boolean);
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (Postman, server-to-server)
+    if (!origin) return callback(null, true);
+    if (
+      allowedOrigins.includes(origin) ||
+      origin.endsWith('.vercel.app')
+    ) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS blocked: ${origin}`));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+};
+
 const io = new Server(server, {
   cors: {
-    origin: '*',
-    methods: ['GET', 'POST']
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.endsWith('.vercel.app')
+      ) {
+        callback(null, true);
+      } else {
+        callback(new Error(`Socket CORS blocked: ${origin}`));
+      }
+    },
+    methods: ['GET', 'POST'],
+    credentials: true
   }
 });
 
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.raw({ type: 'application/octet-stream', limit: '50mb' }));
 
@@ -82,8 +119,13 @@ io.on('connection', (socket) => {
               mappingText += `| ${tid} | ${loc} | ${op} | ${range} |\n`;
           });
           
-          fs.writeFileSync(path.join(__dirname, 'tower_data_mapping.txt'), mappingText);
-          console.log("Successfully generated tower_data_mapping.txt for academic verification!");
+          try {
+            fs.writeFileSync(path.join(__dirname, 'tower_data_mapping.txt'), mappingText);
+            console.log("Successfully generated tower_data_mapping.txt for academic verification!");
+          } catch (fsErr) {
+            // Serverless/read-only filesystem — skip file write, log to console instead
+            console.log("[INFO] tower_data_mapping.txt skipped (read-only FS):", fsErr.message);
+          }
           towerMappingInitialised = true;
       }
       
@@ -211,14 +253,13 @@ io.on('connection', (socket) => {
 const PORT = process.env.PORT || 5000;
 
 async function startServer() {
-  // 1. Initialize DB (create it if missing)
+  // 1. Initialize DB (create tables if missing, seed default users)
   await initializeDatabase();
   
-  // Note: Table creation / syncing is now handled by seed.js, not Sequelize
-  
-  // 3. Start Express
+  // 2. Start Express + Socket.io server
   server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`✅ Server running on port ${PORT}`);
+    console.log(`🌐 Allowed CORS origins: ${allowedOrigins.join(', ')}`);
   });
 }
 
