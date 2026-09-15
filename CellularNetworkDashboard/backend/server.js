@@ -37,10 +37,12 @@ app.use(express.raw({ type: 'application/octet-stream', limit: '50mb' }));
 const towerRoutes = require('./routes/towers');
 const speedTestRoutes = require('./routes/speedTests');
 const { router: authRoutes } = require('./routes/auth');
+const alertRoutes = require('./routes/alerts');
 
 app.use('/api/towers', towerRoutes);
 app.use('/api/speed-tests', speedTestRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/alerts', alertRoutes);
 
 // Basic health check
 app.get('/api/health', (req, res) => {
@@ -125,6 +127,53 @@ io.on('connection', (socket) => {
           [tower.id, callTotal, callAccepted, responseTimeSecs]
         );
 
+        // ── Auto-Alert Generation ────────────────────────────────────────────
+        const answerRate = callTotal > 0 ? callAccepted / callTotal : 1;
+        const incomingHandoff = callTotal * 0.3;
+        const answeredHandoff = Math.round(incomingHandoff * answerRate);
+        const droppedHandoff = Math.max(0, Math.round(incomingHandoff) - answeredHandoff);
+        const droppingProb = incomingHandoff > 0 ? droppedHandoff / incomingHandoff : 0;
+
+        let alertType = null;
+        let alertSeverity = null;
+        let alertMessage = null;
+
+        if (droppingProb > 0.10) {
+          alertType = 'TOWER_OFFLINE';
+          alertSeverity = 'CRITICAL';
+          alertMessage = `Tower ${tower.id} (${tower.locationName}) is OFFLINE — call drop rate ${(droppingProb * 100).toFixed(1)}%`;
+        } else if (droppingProb > 0.07) {
+          alertType = 'SIGNAL_DEGRADED';
+          alertSeverity = 'WARNING';
+          alertMessage = `Tower ${tower.id} (${tower.locationName}) signal DEGRADED — drop rate ${(droppingProb * 100).toFixed(1)}%`;
+        } else if (droppingProb > 0.04) {
+          alertType = 'HIGH_CALL_DROP';
+          alertSeverity = 'WARNING';
+          alertMessage = `Tower ${tower.id} (${tower.locationName}) experiencing high call-drop rate ${(droppingProb * 100).toFixed(1)}%`;
+        } else if (responseTimeSecs > 60) {
+          alertType = 'LATENCY_SPIKE';
+          alertSeverity = 'INFO';
+          alertMessage = `Tower ${tower.id} (${tower.locationName}) latency spike detected — ${responseTimeSecs}s response time`;
+        }
+
+        let newAlert = null;
+        if (alertType) {
+          // Only create alert if there's no recent ACTIVE alert of the same type for this tower (last 60s)
+          const [existing] = await pool.query(
+            `SELECT id FROM Alerts WHERE towerId = ? AND type = ? AND status = 'ACTIVE' AND timestamp > DATE_SUB(NOW(), INTERVAL 60 SECOND) LIMIT 1`,
+            [tower.id, alertType]
+          );
+          if (existing.length === 0) {
+            const [alertResult] = await pool.execute(
+              `INSERT INTO Alerts (towerId, towerName, type, severity, message, status, timestamp)
+               VALUES (?, ?, ?, ?, ?, 'ACTIVE', NOW())`,
+              [tower.id, `${tower.operatorName} – ${tower.locationName}`, alertType, alertSeverity, alertMessage]
+            );
+            const [alertRows] = await pool.query('SELECT * FROM Alerts WHERE id = ?', [alertResult.insertId]);
+            newAlert = alertRows[0] || null;
+          }
+        }
+
         return {
           towerId: tower.id,
           telemetry: {
@@ -135,12 +184,19 @@ io.on('connection', (socket) => {
             callAccepted,
             callBlocked,
             timestamp: new Date()
-          }
+          },
+          newAlert
         };
       }));
 
       // Broadcast to all connected clients
       socket.emit('telemetry_update', updates);
+
+      // Broadcast any new alerts
+      const freshAlerts = updates.filter(u => u.newAlert).map(u => u.newAlert);
+      if (freshAlerts.length > 0) {
+        io.emit('new_alerts', freshAlerts);
+      }
     } catch (err) {
       console.error('Simulation error:', err.message);
     }

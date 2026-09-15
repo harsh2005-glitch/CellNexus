@@ -1,54 +1,118 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Code2, Radio, ChevronRight } from 'lucide-react';
-import { MapContainer, TileLayer, Circle, Marker } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
+import { GoogleMap, OverlayView, Circle } from '@react-google-maps/api';
+
+
+const LANDING_DARK_STYLE = [
+  { elementType: 'geometry', stylers: [{ color: '#0f0f1a' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#0f0f1a' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#4a5568' }] },
+  { featureType: 'administrative', elementType: 'geometry.stroke', stylers: [{ color: '#1e2040' }] },
+  { featureType: 'administrative.country', elementType: 'geometry', stylers: [{ color: '#2d3561' }] },
+  { featureType: 'administrative.locality', elementType: 'labels.text.fill', stylers: [{ color: '#6b7db3' }] },
+  { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#1a1f3a' }] },
+  { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: '#3d4f7c' }] },
+  { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#1e2a4a' }] },
+  { featureType: 'transit', elementType: 'geometry', stylers: [{ color: '#141824' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#070b14' }] },
+  { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#1a2a4a' }] },
+];
 
 /* ── Static sample towers for the landing map ── */
 const SAMPLE_TOWERS = [
-  { id: 1, latitude: 28.6139, longitude: 77.2090, status: 'GOOD',     coverageRadius: 60000 },
-  { id: 2, latitude: 19.0760, longitude: 72.8777, status: 'GOOD',     coverageRadius: 55000 },
+  { id: 1, latitude: 28.6139, longitude: 77.2090, status: 'GOOD', coverageRadius: 60000 },
+  { id: 2, latitude: 19.0760, longitude: 72.8777, status: 'GOOD', coverageRadius: 55000 },
   { id: 3, latitude: 12.9716, longitude: 77.5946, status: 'DEGRADED', coverageRadius: 50000 },
-  { id: 4, latitude: 22.5726, longitude: 88.3639, status: 'GOOD',     coverageRadius: 48000 },
-  { id: 5, latitude: 17.3850, longitude: 78.4867, status: 'OFFLINE',  coverageRadius: 45000 },
-  { id: 6, latitude: 13.0827, longitude: 80.2707, status: 'GOOD',     coverageRadius: 50000 },
+  { id: 4, latitude: 22.5726, longitude: 88.3639, status: 'GOOD', coverageRadius: 48000 },
+  { id: 5, latitude: 17.3850, longitude: 78.4867, status: 'OFFLINE', coverageRadius: 45000 },
+  { id: 6, latitude: 13.0827, longitude: 80.2707, status: 'GOOD', coverageRadius: 50000 },
   { id: 7, latitude: 23.0225, longitude: 72.5714, status: 'DEGRADED', coverageRadius: 42000 },
-  { id: 8, latitude: 26.9124, longitude: 75.7873, status: 'GOOD',     coverageRadius: 40000 },
+  { id: 8, latitude: 26.9124, longitude: 75.7873, status: 'GOOD', coverageRadius: 40000 },
 ];
 
 const getStatusColorLanding = (status) => {
   switch (status) {
-    case 'GOOD':     return '#10B981';
+    case 'GOOD': return '#10B981';
     case 'DEGRADED': return '#F59E0B';
-    case 'OFFLINE':  return '#EF4444';
-    default:         return '#3B82F6';
+    case 'OFFLINE': return '#EF4444';
+    default: return '#3B82F6';
   }
 };
 
-const createLandingIcon = (status) => {
-  const color = getStatusColorLanding(status);
-  // Cell-tower SVG with animated multi-ring signal halo
-  const html = `
-    <div style="position:relative;width:48px;height:48px;display:flex;align-items:center;justify-content:center;">
-      <!-- Outer ring 3 -->
-      <span style="position:absolute;width:48px;height:48px;border-radius:50%;border:1.5px solid ${color};opacity:0.2;animation:landingRing3 3s ease-out infinite;"></span>
-      <!-- Outer ring 2 -->
-      <span style="position:absolute;width:32px;height:32px;border-radius:50%;border:1.5px solid ${color};opacity:0.35;animation:landingRing2 3s ease-out 0.6s infinite;"></span>
-      <!-- Inner glow ring -->
-      <span style="position:absolute;width:20px;height:20px;border-radius:50%;background:${color};opacity:0.18;animation:landingPing 2s cubic-bezier(0,0,0.2,1) infinite;"></span>
-      <!-- Tower SVG icon -->
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:relative;filter:drop-shadow(0 0 4px ${color});">
-        <path d="M12 2 L10 22 L14 22 Z" fill="${color}" opacity="0.9"/>
-        <line x1="8" y1="8" x2="16" y2="8" stroke="${color}" stroke-width="1.5" stroke-linecap="round"/>
-        <line x1="9" y1="13" x2="15" y2="13" stroke="${color}" stroke-width="1.2" stroke-linecap="round"/>
-        <path d="M5 5 Q12 1 19 5" stroke="${color}" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.7"/>
-        <path d="M3 3 Q12 -1 21 3" stroke="${color}" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.4"/>
-        <circle cx="12" cy="22" r="1.5" fill="${color}"/>
-      </svg>
+/* Animated SVG tower rendered as a Google Maps OverlayView */
+const LandingTowerMarker = ({ tower }) => {
+  const color = getStatusColorLanding(tower.status);
+  return (
+    <OverlayView
+      position={{ lat: tower.latitude, lng: tower.longitude }}
+      mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+      getPixelPositionOffset={() => ({ x: -24, y: -24 })}
+    >
+      <div style={{ width: 48, height: 48, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ position: 'absolute', width: 48, height: 48, borderRadius: '50%', border: `1.5px solid ${color}`, opacity: 0.2, animation: 'landingRing3 3s ease-out infinite' }} />
+        <span style={{ position: 'absolute', width: 32, height: 32, borderRadius: '50%', border: `1.5px solid ${color}`, opacity: 0.35, animation: 'landingRing2 3s ease-out 0.6s infinite' }} />
+        <span style={{ position: 'absolute', width: 20, height: 20, borderRadius: '50%', background: color, opacity: 0.18, animation: 'landingPing 2s cubic-bezier(0,0,0.2,1) infinite' }} />
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: 'relative', filter: `drop-shadow(0 0 4px ${color})` }}>
+          <path d="M12 2 L10 22 L14 22 Z" fill={color} opacity="0.9" />
+          <line x1="8" y1="8" x2="16" y2="8" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+          <line x1="9" y1="13" x2="15" y2="13" stroke={color} strokeWidth="1.2" strokeLinecap="round" />
+          <path d="M5 5 Q12 1 19 5" stroke={color} strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.7" />
+          <path d="M3 3 Q12 -1 21 3" stroke={color} strokeWidth="1" fill="none" strokeLinecap="round" opacity="0.4" />
+          <circle cx="12" cy="22" r="1.5" fill={color} />
+        </svg>
+      </div>
+    </OverlayView>
+  );
+};
+
+/* Google Maps landing map wrapper */
+const LandingMap = ({ isLoaded }) => {
+  const mapRef = useRef(null);
+  const onLoad = useCallback((map) => { mapRef.current = map; }, []);
+  const onUnmount = useCallback(() => { mapRef.current = null; }, []);
+
+  if (!isLoaded) return (
+    <div style={{ height: '100%', minHeight: 480, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0f0f1a', color: '#6b7db3', fontSize: '0.82rem' }}>
+      Loading map…
     </div>
-  `;
-  return L.divIcon({ className: 'bg-transparent', html, iconSize: [48, 48], iconAnchor: [24, 24] });
+  );
+
+  return (
+    <GoogleMap
+      mapContainerStyle={{ height: '100%', width: '100%', minHeight: 480 }}
+      center={{ lat: 20.5937, lng: 78.9629 }}
+      zoom={4}
+      options={{
+        styles: LANDING_DARK_STYLE,
+        disableDefaultUI: true,
+        zoomControl: true,
+        clickableIcons: false,
+      }}
+      onLoad={onLoad}
+      onUnmount={onUnmount}
+    >
+      {SAMPLE_TOWERS.map(tower => {
+        const col = getStatusColorLanding(tower.status);
+        return (
+          <React.Fragment key={tower.id}>
+            <Circle
+              center={{ lat: tower.latitude, lng: tower.longitude }}
+              radius={tower.coverageRadius}
+              options={{ strokeColor: col, strokeOpacity: 0.5, strokeWeight: 1.5, fillColor: col, fillOpacity: 0.07 }}
+            />
+            <Circle
+              center={{ lat: tower.latitude, lng: tower.longitude }}
+              radius={tower.coverageRadius * 0.45}
+              options={{ strokeColor: col, strokeOpacity: 0.7, strokeWeight: 2, fillColor: col, fillOpacity: 0.18 }}
+            />
+            <LandingTowerMarker tower={tower} />
+          </React.Fragment>
+        );
+      })}
+    </GoogleMap>
+  );
 };
 
 /* ── Role card data ── */
@@ -57,67 +121,70 @@ const ROLES = [
     id: 'admin',
     label: 'Admin',
     icon: Shield,
-    iconBg: 'rgba(255,255,255,0.25)',
-    iconColor: '#FFFFFF',
-    cardBg: 'linear-gradient(145deg, #7C3AED 0%, #4C1D95 100%)',
-    cardBgHover: 'linear-gradient(145deg, #8B5CF6 0%, #5B21B6 100%)',
-    borderColor: 'rgba(167,139,250,0.4)',
-    borderHover: 'rgba(196,181,253,0.7)',
+    iconBg: 'rgba(5, 150, 105, 0.22)',
+    iconColor: '#6ee7b7',
+    // Map GREEN — the GOOD tower marker color (#059669 / #10B981)
+    cardBg: 'linear-gradient(145deg, #022c1a 0%, #064d2a 40%, #053d20 100%)',
+    cardBgHover: 'linear-gradient(145deg, #043520 0%, #0a6035 40%, #064a28 100%)',
+    borderColor: 'rgba(5, 150, 105, 0.45)',
+    borderHover: 'rgba(16, 185, 129, 0.80)',
     badge: 'Requires Login',
-    badgeBg: 'rgba(255,255,255,0.18)',
-    badgeText: '#EDE9FE',
+    badgeBg: 'rgba(5, 150, 105, 0.22)',
+    badgeText: '#6ee7b7',
     subText: 'admin@cellnexus.com',
-    subColor: '#C4B5FD',
-    description: '',
-    btnBg: 'rgba(255,255,255,0.22)',
-    btnBgHover: 'rgba(255,255,255,0.35)',
-    shadowColor: 'rgba(124, 58, 237, 0.45)',
-    labelColor: '#FFFFFF',
-    subTextColor: '#C4B5FD',
+    btnBg: 'rgba(5, 150, 105, 0.25)',
+    btnBgHover: 'rgba(5, 150, 105, 0.55)',
+    shadowColor: 'rgba(5, 150, 105, 0.40)',
+    labelColor: '#d1fae5',
+    subTextColor: '#34d399',
+    accentColor: '#059669',
+    glowColor: 'rgba(16, 185, 129, 0.25)',
   },
   {
     id: 'developer',
     label: 'Developer',
     icon: Code2,
-    iconBg: 'rgba(255,255,255,0.25)',
-    iconColor: '#FFFFFF',
-    cardBg: 'linear-gradient(145deg, #0EA5E9 0%, #1E40AF 100%)',
-    cardBgHover: 'linear-gradient(145deg, #38BDF8 0%, #2563EB 100%)',
-    borderColor: 'rgba(125,211,252,0.4)',
-    borderHover: 'rgba(147,197,253,0.7)',
+    iconBg: 'rgba(217, 119, 6, 0.22)',
+    iconColor: '#fcd34d',
+    // Map ORANGE — the DEGRADED tower marker color (#D97706 / #F59E0B)
+    cardBg: 'linear-gradient(145deg, #2a1500 0%, #4a2500 40%, #3a1c00 100%)',
+    cardBgHover: 'linear-gradient(145deg, #381b00 0%, #5c3000 40%, #4a2400 100%)',
+    borderColor: 'rgba(217, 119, 6, 0.45)',
+    borderHover: 'rgba(245, 158, 11, 0.80)',
     badge: 'Dev Access',
-    badgeBg: 'rgba(255,255,255,0.18)',
-    badgeText: '#DBEAFE',
+    badgeBg: 'rgba(217, 119, 6, 0.22)',
+    badgeText: '#fcd34d',
     subText: 'System & API Info',
-    subColor: '#BAE6FD',
-    description: '',
-    btnBg: 'rgba(255,255,255,0.22)',
-    btnBgHover: 'rgba(255,255,255,0.35)',
-    shadowColor: 'rgba(14, 165, 233, 0.45)',
-    labelColor: '#FFFFFF',
-    subTextColor: '#BAE6FD',
+    btnBg: 'rgba(217, 119, 6, 0.25)',
+    btnBgHover: 'rgba(217, 119, 6, 0.55)',
+    shadowColor: 'rgba(217, 119, 6, 0.40)',
+    labelColor: '#fef3c7',
+    subTextColor: '#fbbf24',
+    accentColor: '#d97706',
+    glowColor: 'rgba(245, 158, 11, 0.25)',
   },
   {
     id: 'network_operator',
     label: 'Network Operator',
     icon: Radio,
-    iconBg: 'rgba(255,255,255,0.25)',
-    iconColor: '#FFFFFF',
-    cardBg: 'linear-gradient(145deg, #10B981 0%, #065F46 100%)',
-    cardBgHover: 'linear-gradient(145deg, #34D399 0%, #047857 100%)',
-    borderColor: 'rgba(110,231,183,0.4)',
-    borderHover: 'rgba(110,231,183,0.7)',
+    iconBg: 'rgba(180, 140, 80, 0.25)',
+    iconColor: '#f0d090',
+    // Map TERRAIN — sandy brown/khaki land color from Google Maps (#c4a36a)
+    cardBg: 'linear-gradient(145deg, #1e1508 0%, #2e2010 40%, #251900 100%)',
+    cardBgHover: 'linear-gradient(145deg, #2a1c0a 0%, #3a2a14 40%, #2e2005 100%)',
+    borderColor: 'rgba(180, 140, 80, 0.50)',
+    borderHover: 'rgba(220, 175, 100, 0.85)',
     badge: 'Full Dashboard',
-    badgeBg: 'rgba(255,255,255,0.18)',
-    badgeText: '#D1FAE5',
+    badgeBg: 'rgba(180, 140, 80, 0.22)',
+    badgeText: '#f0d090',
     subText: 'Real-time Monitoring',
-    subColor: '#A7F3D0',
-    description: '',
-    btnBg: 'rgba(255,255,255,0.22)',
-    btnBgHover: 'rgba(255,255,255,0.35)',
-    shadowColor: 'rgba(16, 185, 129, 0.45)',
-    labelColor: '#FFFFFF',
-    subTextColor: '#A7F3D0',
+    btnBg: 'rgba(180, 140, 80, 0.25)',
+    btnBgHover: 'rgba(180, 140, 80, 0.55)',
+    shadowColor: 'rgba(180, 140, 80, 0.38)',
+    labelColor: '#fef3c7',
+    subTextColor: '#d4a847',
+    accentColor: '#c4a36a',
+    glowColor: 'rgba(196, 163, 106, 0.25)',
   },
 ];
 
@@ -249,7 +316,7 @@ const RoleCard = ({ role, isHovered, onHover, onLeave, onClick }) => {
   );
 };
 
-const RoleSelector = ({ onSelectRole }) => {
+const RoleSelector = ({ onSelectRole, mapsLoaded }) => {
   const [hoveredRole, setHoveredRole] = useState(null);
 
   return (
@@ -288,7 +355,7 @@ const RoleSelector = ({ onSelectRole }) => {
 
         <h1 style={{
           fontSize: '2.6rem', fontWeight: '800', letterSpacing: '-0.04em',
-          background: 'linear-gradient(135deg, #1E40AF, #0891B2)',
+          background: 'linear-gradient(135deg, #10b981, #f59e0b, #ef4444)',
           WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           marginBottom: '0.3rem', lineHeight: 1.1,
         }}>
@@ -388,58 +455,7 @@ const RoleSelector = ({ onSelectRole }) => {
             Live Network Map
           </div>
 
-          <MapContainer
-            center={[20.5937, 78.9629]}
-            zoom={4}
-            style={{ height: '100%', width: '100%', minHeight: '480px', flex: 1 }}
-            zoomControl={true}
-            attributionControl={false}
-            scrollWheelZoom={true}
-            dragging={true}
-            doubleClickZoom={true}
-          >
-            {/* CartoDB Dark Matter — 100% free, no API key needed */}
-            <TileLayer
-              url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-              subdomains="abcd"
-              maxZoom={19}
-            />
-            {SAMPLE_TOWERS.map(tower => {
-              const col = getStatusColorLanding(tower.status);
-              return (
-                <React.Fragment key={tower.id}>
-                  {/* Outer faint coverage zone */}
-                  <Circle
-                    center={[tower.latitude, tower.longitude]}
-                    radius={tower.coverageRadius}
-                    pathOptions={{
-                      color: col,
-                      fillColor: col,
-                      fillOpacity: 0.07,
-                      weight: 1.5,
-                      dashArray: '6 4',
-                    }}
-                  />
-                  {/* Inner stronger core zone */}
-                  <Circle
-                    center={[tower.latitude, tower.longitude]}
-                    radius={tower.coverageRadius * 0.45}
-                    pathOptions={{
-                      color: col,
-                      fillColor: col,
-                      fillOpacity: 0.18,
-                      weight: 2,
-                    }}
-                  />
-                  <Marker
-                    position={[tower.latitude, tower.longitude]}
-                    icon={createLandingIcon(tower.status)}
-                  />
-                </React.Fragment>
-              );
-            })}
-          </MapContainer>
+          <LandingMap isLoaded={mapsLoaded} />
 
           {/* Legend */}
           <div style={{

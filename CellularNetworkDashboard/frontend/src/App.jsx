@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useJsApiLoader } from '@react-google-maps/api';
 
 import Header from './components/Header';
 import MapView from './components/MapView';
@@ -15,6 +16,7 @@ import AuthModal from './components/AuthModal';
 import NetworkRecommenderModal from './components/NetworkRecommenderModal';
 import RoleSelector from './components/RoleSelector';
 import DeveloperPanel from './components/DeveloperPanel';
+import AlertsPanel from './components/AlertsPanel';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const socket = io(API_URL);
@@ -30,6 +32,12 @@ function App() {
   const [currentView, setCurrentView] = useState('role_select');
   const [isTesting, setIsTesting] = useState(false);
 
+  // ── Load Google Maps API once for the entire app ──
+  const { isLoaded: mapsLoaded, loadError: mapsLoadError } = useJsApiLoader({
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+    id: 'cellnexus-google-map',
+  });
+
   const [towers, setTowers] = useState([]);
   const [selectedTower, setSelectedTower] = useState(null);
   const [operatorFilter, setOperatorFilter] = useState('All Operators');
@@ -37,6 +45,9 @@ function App() {
   const [showRecommenderModal, setShowRecommenderModal] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showAlertsPanel, setShowAlertsPanel] = useState(false);
+  const [alerts, setAlerts] = useState([]);
+  const [realtimeAlerts, setRealtimeAlerts] = useState([]);
   const [globalMetrics, setGlobalMetrics] = useState({
     onlineTowers: 0,
     connectedUsers: 0,
@@ -100,6 +111,17 @@ function App() {
       });
     });
 
+    // ── Real-time alert listener ──
+    socket.on('new_alerts', (freshAlerts) => {
+      // Update badge counts from fresh alert data
+      setAlerts(prev => {
+        const existingIds = new Set(prev.map(a => a.id));
+        const brandNew = freshAlerts.filter(a => !existingIds.has(a.id));
+        return brandNew.length ? [...brandNew, ...prev] : prev;
+      });
+      setRealtimeAlerts(freshAlerts);
+    });
+
     setGlobalMetrics({
       onlineTowers: 30,
       connectedUsers: 8432,
@@ -110,6 +132,7 @@ function App() {
 
     return () => {
       socket.off('telemetry_update');
+      socket.off('new_alerts');
     };
   }, []);
 
@@ -150,8 +173,7 @@ function App() {
     } else if (roleId === 'network_operator') {
       setCurrentView('network_operator');
     } else if (roleId === 'developer') {
-      // Coming soon — no action for now
-      return;
+      setCurrentView('developer');
     }
   };
 
@@ -254,7 +276,7 @@ function App() {
   if (currentView === 'role_select' || currentView === 'admin_pending') {
     return (
       <>
-        <RoleSelector onSelectRole={handleRoleSelect} />
+        <RoleSelector onSelectRole={handleRoleSelect} mapsLoaded={mapsLoaded} />
 
         {/* Auth Modal for Admin Login */}
         <AuthModal
@@ -354,6 +376,17 @@ function App() {
         onBackToRoles={() => setCurrentView('role_select')}
         onRunSpeedTest={runSpeedTest}
         isTesting={isTesting}
+        alertCount={
+          selectedTower
+            ? alerts.filter(a => a.status === 'ACTIVE' && a.towerId === selectedTower.id).length
+            : 0
+        }
+        criticalAlertCount={
+          selectedTower
+            ? alerts.filter(a => a.severity === 'CRITICAL' && a.status === 'ACTIVE' && a.towerId === selectedTower.id).length
+            : 0
+        }
+        onAlertsOpen={() => setShowAlertsPanel(true)}
       />
 
       <MetricsGrid metrics={globalMetrics} isTesting={isTesting} />
@@ -366,6 +399,7 @@ function App() {
             towers={filteredTowers}
             selectedTower={selectedTower}
             onSelectTower={setSelectedTower}
+            isLoaded={mapsLoaded}
           />
         </div>
 
@@ -415,6 +449,17 @@ function App() {
         onSelectTower={(tower) => {
           setSelectedTower(tower);
         }}
+      />
+
+      {/* Fault & Alert Management Panel */}
+      <AlertsPanel
+        isOpen={showAlertsPanel}
+        onClose={() => {
+          setShowAlertsPanel(false);
+          setRealtimeAlerts([]);
+        }}
+        newAlerts={realtimeAlerts}
+        selectedTower={selectedTower}
       />
     </motion.div>
   );

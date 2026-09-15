@@ -167,3 +167,9 @@ body::before {
   position: relative;
   z-index: 1;
 }
+
+/* ── Utility animations ── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}

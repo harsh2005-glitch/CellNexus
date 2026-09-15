@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Activity, Radio, MapPin, Network, Shield, LogIn, LogOut, UserCheck, ArrowLeft, Gauge } from 'lucide-react';
+import { Activity, Radio, MapPin, Network, Shield, LogIn, LogOut, UserCheck, ArrowLeft, Gauge, Bell } from 'lucide-react';
 import MyNetworkModal from './MyNetworkModal';
 
-const Header = ({ towers = [], operatorFilter, setOperatorFilter, cityFilter, setCityFilter, onAdminOpen, currentUser, onAuthOpen, onLogout, onOpenRecommender, onBackToRoles, onRunSpeedTest, isTesting = false }) => {
+const Header = ({ towers = [], operatorFilter, setOperatorFilter, cityFilter, setCityFilter, onAdminOpen, currentUser, onAuthOpen, onLogout, onOpenRecommender, onBackToRoles, onRunSpeedTest, isTesting = false, alertCount = 0, criticalAlertCount = 0, onAlertsOpen }) => {
   const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false);
 
   const operators = ['All Operators', ...new Set(towers.map(t => t.operatorName))].filter(Boolean);
@@ -167,6 +167,45 @@ const Header = ({ towers = [], operatorFilter, setOperatorFilter, cityFilter, se
                 <Gauge size={14} />
                 Run Speed Test
               </>
+            )}
+          </button>
+        )}
+
+        {/* Alerts Bell Button */}
+        {onAlertsOpen && (
+          <button
+            id="alerts-bell-btn"
+            onClick={onAlertsOpen}
+            title="Fault & Alert Feed"
+            style={{
+              position: 'relative',
+              width: '36px', height: '36px', borderRadius: '10px',
+              background: alertCount > 0
+                ? (criticalAlertCount > 0 ? 'rgba(239,68,68,0.12)' : 'rgba(245,158,11,0.10)')
+                : 'rgba(79,70,229,0.08)',
+              border: alertCount > 0
+                ? (criticalAlertCount > 0 ? '1px solid rgba(239,68,68,0.35)' : '1px solid rgba(245,158,11,0.30)')
+                : '1px solid rgba(79,70,229,0.20)',
+              color: alertCount > 0 ? (criticalAlertCount > 0 ? '#EF4444' : '#F59E0B') : '#4F46E5',
+              cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'all 0.2s',
+              flexShrink: 0,
+            }}
+          >
+            <Bell size={16} style={{ animation: criticalAlertCount > 0 ? 'none' : 'none' }} />
+            {alertCount > 0 && (
+              <span style={{
+                position: 'absolute', top: '-5px', right: '-5px',
+                minWidth: '17px', height: '17px', borderRadius: '999px',
+                background: criticalAlertCount > 0 ? '#EF4444' : '#F59E0B',
+                color: '#fff', fontSize: '0.58rem', fontWeight: '800',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                border: '2px solid white', padding: '0 3px',
+                animation: criticalAlertCount > 0 ? 'pulse 1.5s infinite' : 'none',
+              }}>
+                {alertCount > 99 ? '99+' : alertCount}
+              </span>
             )}
           </button>
         )}

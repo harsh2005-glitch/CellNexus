@@ -21,7 +21,7 @@ Network Architecture: Geographical Data Slicing Map
 | 16       | Kolkata (Park Street) | Airtel        | [285 to 303]       |
 | 17       | Kolkata (New Town Action Area 1) | Airtel        | [304 to 322]       |
 | 18       | Kolkata (Sealdah) | Vi            | [323 to 341]       |
-| 19       | Kolkata (Shyambazar) | BSNL          | [342 to 360]       |
+| 19       | Kolkata (Dum Dum North) | BSNL          | [342 to 360]       |
 | 20       | Kolkata (Dum Dum / Airport) | Jio           | [361 to 379]       |
 | 21       | Kolkata (Jadavpur) | Airtel        | [380 to 398]       |
 | 22       | Kolkata (Garia Bus Depot) | Vi            | [399 to 417]       |
@@ -43,9 +43,9 @@ Network Architecture: Geographical Data Slicing Map
 | 38       | Hyderabad (HITECH City) | Jio           | [703 to 721]       |
 | 39       | Hyderabad (Charminar) | Airtel        | [722 to 740]       |
 | 40       | Hyderabad (Banjara Hills) | Vi            | [741 to 759]       |
-| 41       | Rajkot           | Jio           | [760 to 778]       |
+| 41       | Junagadh         | Jio           | [760 to 778]       |
 | 42       | Ahmedabad (Navrangpura) | Airtel        | [779 to 797]       |
-| 43       | Ahmedabad (SG Highway) | Vi            | [798 to 816]       |
-| 44       | Pune (Kothrud)   | Airtel        | [817 to 835]       |
+| 43       | Rajkot (Gondal Road) | Vi            | [798 to 816]       |
+| 44       | Hubballi         | Airtel        | [817 to 835]       |
 | 45       | Pune (Hinjewadi IT Park) | Vi            | [836 to 854]       |
-| 46       | Pune (Shivajinagar) | Jio           | [855 to 899]       |
+| 46       | Pune (Katraj)    | Jio           | [855 to 899]       |
