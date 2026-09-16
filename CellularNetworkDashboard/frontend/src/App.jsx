@@ -48,6 +48,7 @@ function App() {
   const [showAlertsPanel, setShowAlertsPanel] = useState(false);
   const [alerts, setAlerts] = useState([]);
   const [realtimeAlerts, setRealtimeAlerts] = useState([]);
+  const [apiError, setApiError] = useState(false);
   const [globalMetrics, setGlobalMetrics] = useState({
     onlineTowers: 0,
     connectedUsers: 0,
@@ -57,15 +58,21 @@ function App() {
   });
 
   const fetchTowers = () => {
-    axios.get(`${API_URL}/api/towers`).then(res => {
-      setTowers(res.data);
-      setGlobalMetrics(prev => ({ ...prev, onlineTowers: res.data.length }));
+    axios.get(`${API_URL}/api/towers`)
+      .then(res => {
+        setApiError(false);
+        setTowers(res.data);
+        setGlobalMetrics(prev => ({ ...prev, onlineTowers: res.data.length }));
 
-      if (selectedTower) {
-        const updatedSelected = res.data.find(t => t.id === selectedTower.id);
-        if (updatedSelected) setSelectedTower(updatedSelected);
-      }
-    });
+        if (selectedTower) {
+          const updatedSelected = res.data.find(t => t.id === selectedTower.id);
+          if (updatedSelected) setSelectedTower(updatedSelected);
+        }
+      })
+      .catch(err => {
+        console.error('Failed to fetch towers from API:', err);
+        setApiError(true);
+      });
   };
 
   useEffect(() => {
@@ -388,6 +395,42 @@ function App() {
         }
         onAlertsOpen={() => setShowAlertsPanel(true)}
       />
+
+      {apiError && (
+        <div style={{
+          background: 'rgba(239, 68, 68, 0.15)',
+          border: '1px solid rgba(239, 68, 68, 0.4)',
+          borderRadius: '12px',
+          padding: '12px 18px',
+          color: '#F87171',
+          fontSize: '0.85rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '12px',
+          backdropFilter: 'blur(8px)'
+        }}>
+          <div>
+            <strong>⚠️ Backend Connection Required:</strong> Unable to fetch data from backend at <code style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '4px' }}>{API_URL}</code>.
+            If viewing on Vercel, set <code style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '4px' }}>VITE_API_URL</code> in Vercel Project Settings to your deployed backend URL (e.g. Render).
+          </div>
+          <button
+            onClick={fetchTowers}
+            style={{
+              padding: '6px 14px',
+              borderRadius: '6px',
+              background: 'rgba(239, 68, 68, 0.25)',
+              border: '1px solid rgba(239, 68, 68, 0.5)',
+              color: '#FFF',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              fontWeight: '600'
+            }}
+          >
+            Retry Connection
+          </button>
+        </div>
+      )}
 
       <MetricsGrid metrics={globalMetrics} isTesting={isTesting} />
 
